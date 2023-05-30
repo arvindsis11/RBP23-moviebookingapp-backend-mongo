@@ -1,0 +1,108 @@
+@RunWith(SpringRunner.class)
+@WebMvcTest(AuthorizationController.class)
+public class AuthorizationControllerTest {
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	@MockBean
+	private UserService userService;
+
+	@MockBean
+	private UserRepository userRepository;
+
+	@MockBean
+	private RoleRepository roleRepository;
+
+	@MockBean
+	private JwtTokenUtil jwtTokenUtil;
+
+	@Test
+	public void testRegisterUser() throws Exception {
+		SignupDto signupDto = new SignupDto();
+		// set signupDto properties
+
+		when(userService.addUser(signupDto)).thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
+
+		mockMvc.perform(post("/api/v1.0/auth/signup")
+				.content(asJsonString(signupDto))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	public void testLoginUser() throws Exception {
+		LoginDto loginDto = new LoginDto();
+		// set loginDto properties
+
+		User user = new User();
+		// set user properties
+
+		when(userService.getUserByUsername(loginDto.getUsername())).thenReturn(Optional.of(user));
+		when(jwtTokenUtil.generatToken(loginDto)).thenReturn("jwt-token");
+
+		mockMvc.perform(post("/api/v1.0/auth/login")
+				.content(asJsonString(loginDto))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.jwtToken", is("jwt-token")))
+				.andExpect(jsonPath("$.id", is(user.getId())))
+				.andExpect(jsonPath("$.username", is(user.getUsername())))
+				.andExpect(jsonPath("$.email", is(user.getEmail())))
+				.andExpect(jsonPath("$.roles", is(user.getRoles())));
+	}
+
+	@Test
+	public void testLoginUserInvalidCredentials() throws Exception {
+		LoginDto loginDto = new LoginDto();
+		// set loginDto properties
+
+		when(userService.getUserByUsername(loginDto.getUsername())).thenReturn(Optional.empty());
+
+		mockMvc.perform(post("/api/v1.0/auth/login")
+				.content(asJsonString(loginDto))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().string("Invalid username or password"));
+	}
+
+	@Test
+	public void testValidateTokenValid() throws Exception {
+		String token = "Bearer jwt-token";
+
+		when(jwtTokenUtil.validateJwtToken("jwt-token")).thenReturn(true);
+		when(jwtTokenUtil.getUserNameFromJwtToken("jwt-token")).thenReturn("username");
+		when(jwtTokenUtil.getRoleFromToken("jwt-token")).thenReturn("user");
+
+		mockMvc.perform(post("/api/v1.0/auth/validate")
+				.header("Authorization", token))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.username", is("username")))
+				.andExpect(jsonPath("$.user", is("user")));
+	}
+
+	@Test
+	public void testValidateTokenInvalid() throws Exception {
+		String token = "Bearer jwt-token";
+
+		when(jwtTokenUtil.validateJwtToken("jwt-token")).thenReturn(false);
+
+		mockMvc.perform(post("/api/v1.0/auth/validate")
+				.header("Authorization", token))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().string("Invalid token"));
+	}
+
+	@Test
+	public void testForgotPassword() throws Exception {
+		ResetDto resetDto = new ResetDto();
+		// set resetDto properties
+
+		when(userService.updatePassword(eq("username"), any(ResetDto.class)))
+			.thenReturn(new ResponseEntity<>(HttpStatus.OK));
+
+		mockMvc.perform(patch("/api/v1.0/auth/forgot/username")
+				

@@ -1,0 +1,3 @@
+docker build -t arvindsis35/movieapp-microservice.jar:latest -f Dockerfile .
+docker push arvindsis35/movieapp-microservice.jar
+docker run -p 8080:8080 arvindsis35/movieapp-microservice.jar

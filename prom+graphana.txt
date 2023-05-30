@@ -1,0 +1,80 @@
+Micrometer
+---------------
+Micrometer is a metrics collection facade which is used to gauge,count and measure the code performance, code efficiency
+and memory management by your program.
+
+Actuator in Springboot
+
+
+
+Prometheus
+----------------
+Prometheus is a popular implemetation of Micrometer through graphical interface.
+
+prometheus.yml in our springboot.
+
+Download and install in local or in docker
+
+
+Grafana
+------------------
+Granafa is another popular graphical user interface that works with many micrometer implementations. It makes the visualization prettier.
+
+
+Download and install in local or in docker
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Micrometer+Actuator+Prometheus+Grafana
+================================================
+
+1. docker pull prom/prometheus 
+2. docker pull grafana/grafana 
+3. Create Springboot microservice with required dependencies
+4. Add Actuator dependency --> Add the following endpoint management configuration in application.properties:
+	management.endpoints.web.exposure.include=*
+management.endpoint.health.show-details=always	
+5.Add prometheus.yml is springboot microservice project	
+
+6. Open localhost:application port number/actuator (localhost:8080/actuator)
+7. Check the JVM feed on actuator console
+8. Find out micrometer-prometheus URL from actuator console
+9. Run micrometer-prometheus URL -> eg: http://localhost:8086/actuator/prometheus
+10. 
+11. Re-run the springboot microservice project
+
+
+12.Open promethues.yml location --> open cmd from there -->Run the prometheus using the following command:-
+	docker run -p 9090:9090 [path of our promethues.yml] [prometheus container name]
+ eg: docker run -p 9090:9090 promethues.yml prom/prometheus
+
+13. Open localhost:9090/graph
+14. Select any query and execute
+15. Opem cmd ->type docker run -d --name=grafana -p 3000:3000 grafana/grafana
+16. Open localhost:3000
+17. Username: admin  Password:admin
+18. Create a new Data Soure--> Give URL as localhost:9090
+19. Add New Dashboard -->Give query in metrics browser :process_start_time_seconds and press "Run Queries"
+--imp_if there is issue with graphana using machine ip address

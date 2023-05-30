@@ -1,0 +1,21 @@
+https://github.com/springdoc/springdoc-openapi/issues/49
+//open-api issue 
+Hi,
+
+You should add the @SecurityRequirement tags to your protected APIs.
+For example:
+
+@Operation(security = { @SecurityRequirement(name = "bearer-key") })
+And the security definition sample:
+
+@Bean
+ public OpenAPI customOpenAPI() {
+   return new OpenAPI().components(new Components().addSecuritySchemes("bearer-key",
+     new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
+}
+https://github.com/springdoc/springdoc-openapi/issues/49
+
+1.if jwt filter not works check @component there for registering it with spring boot
+
+mongodb:docker
+https://github.com/docker-library/mongo/issues/558
